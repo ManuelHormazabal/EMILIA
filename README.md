@@ -22,5 +22,8 @@ decompositions, they are limited to work in the linear-elastic (no damage) strai
 these methods cannot generate results as time-dependent functions, so several analyses must be
 conducted to assess the evolution of dynamics parameters like natural frequency and mode shapes.
 
-Ref
+
+
+Reference:
+
 M. Hormazábal, M. Masciotta and D. Oliveira, Proposal for a Time-Dependent Dynamic Identification Algorithm for Structural Health Monitoring, in: SAHC. URL https://www.scipedia.com/public/Hormazabal_et_al_2021a
