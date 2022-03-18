@@ -27,3 +27,5 @@ conducted to assess the evolution of dynamics parameters like natural frequency 
 Reference:
 
 M. Hormazábal, M. Masciotta and D. Oliveira, Proposal for a Time-Dependent Dynamic Identification Algorithm for Structural Health Monitoring, in: SAHC. URL https://www.scipedia.com/public/Hormazabal_et_al_2021a
+
+M. Hormazábal, Análisis de modos de vibración en estructuras mediante registro de vibraciones de ruido ambiente [Structural modal analysis through ambient vibration measurements]. URL http://hdl.handle.net/10498/21095
