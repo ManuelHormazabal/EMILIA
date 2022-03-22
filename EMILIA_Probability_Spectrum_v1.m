@@ -15,13 +15,16 @@ function EMILIA_Probability_Spectrum_v1(Ch_plot,Sq_plot,Sp_skip,iFr,iAm,Bayes_PD
     if isempty(Ch_plot)    
         Ch_plot = 1:numel(Channels);
     end
+    if isempty(fn_span)
+        fn_span = [0 fs/2];
+    end
+    if isempty(Min_Prob)
+        Min_Prob = 0.1*(Level+1);
+    end
     Data_iFr = iFr(Ch_plot,:,:);
     Data_iAm = iAm(Ch_plot,:,:);
     figure('units','normalized','outerposition',[0 0 1 1]);
     tt = 0:(1/fs):(length(Data_iAm(1,:,1))/fs)-(1/fs);
-    if isempty(fn_span)
-        fn_span = [0 fs/2];
-    end
     xlim(fn_span); 
     grid on; grid minor; xlabel('Instantaneous Frequency [Hz]');
     ax = gca; 
@@ -48,7 +51,7 @@ function EMILIA_Probability_Spectrum_v1(Ch_plot,Sq_plot,Sp_skip,iFr,iAm,Bayes_PD
             for j = 1:numel(Ch_plot)
                 for k = 1:numel(Sq_plot)
                     if k == 1 && j == 1
-                        L1 = line(f_vector,PDF_Fun(j,:,Sq_plot(k)),'Color',[0.6350 0.0780 0.1840],'LineStyle','--','LineWidth',0.8,'Displayname','Kernel - Avg. fn = 1.95 Hz.');
+                        L1 = line(f_vector,PDF_Fun(j,:,Sq_plot(k)),'Color',[0.6350 0.0780 0.1840],'LineStyle','--','LineWidth',0.8,'Displayname','Kernel PDF');
                     else
                         line(f_vector,PDF_Fun(j,:,Sq_plot(k)),'Color',[0.6350 0.0780 0.1840],'LineStyle','--','LineWidth',0.8,'HandleVisibility','off');
                     end
@@ -58,9 +61,9 @@ function EMILIA_Probability_Spectrum_v1(Ch_plot,Sq_plot,Sp_skip,iFr,iAm,Bayes_PD
         if isequal(Plot_BPD,'Yes')
             for k = 1:numel(Sq_plot)
                 if k == 1
-                    L2 = line(f_vector,Bayes_PD(:,Sq_plot(k)),'Color','r','LineStyle','-','LineWidth',3,'Displayname','Bayes - MEV fn = 1.87 Hz.');
+                    L2 = line(f_vector,Bayes_PD(:,Sq_plot(k)),'Color','r','LineStyle','--','LineWidth',3,'Displayname','Bayes Likelihood');
                 else
-                    line(f_vector,Bayes_PD(:,Sq_plot(k)),'Color','r','LineStyle','-','LineWidth',3,'HandleVisibility','off');
+                    line(f_vector,Bayes_PD(:,Sq_plot(k)),'Color','r','LineStyle','--','LineWidth',3,'HandleVisibility','off');
                 end
             end
         end
@@ -88,9 +91,9 @@ function EMILIA_Probability_Spectrum_v1(Ch_plot,Sq_plot,Sp_skip,iFr,iAm,Bayes_PD
                 ylim([(max(max(Bayes_PD))/200) (20*max(max(Bayes_PD)))]);
         end
         if isempty(Sp_skip)
-            title({['EMILIA Probability Spectrum'],[num2str(Level),'th level ',Wavelet,' MODWPT decomposition'],['Input Channels:  ',num2str(Channels)]});
+            title({['EMILIA Probability Spectrum'],[num2str(Level),'th level ',Wavelet,' MODWPT decomposition']});%,['Input Channels:  ',num2str(Channels)]});
         else     
-            title({['EMILIA Time-Dependent Probability Spectrum'],[num2str(Level),'th level ',Wavelet,' MODWPT decomposition'],['Input Channels:  ',num2str(Channels)]});
+            title({['EMILIA Time-Dependent Probability Spectrum'],[num2str(Level),'th level ',Wavelet,' MODWPT decomposition']});%,['Input Channels:  ',num2str(Channels)]});
         end
         if isequal(Plot_Test,'Yes')
             aleg = axes('position',get(gca,'position'),'visible','off');

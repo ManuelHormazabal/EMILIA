@@ -43,7 +43,7 @@ function EMILIA_Hilbert_Spectrum_v1(Acc_Data,iFr,iAm,fs,Level,Channels,Ch_plot,S
     end
     xlabel('Time [s]'); 
     ylabel('Instantaneous Frequency [Hz]');       
-    title({['Hilbert Spectrum - Wavelet: ',Wavelet],[num2str(Level),'th level MODWPT decomposition']}); 
+    title({['Hilbert Spectrogram'],[num2str(Level),'th level ',Wavelet,' MODWPT decomposition']}); 
     barra_T = colorbar; barra_T.FontSize = Font_Size; 
     barra_T.Label.String = 'Instantaneous Amplitude'; barra_T.Label.FontSize = Font_Size; 
     colormap jet(128);
