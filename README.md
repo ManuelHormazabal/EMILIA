@@ -1,5 +1,5 @@
 # Enhanced Modal Identification for Long-term Integrity Assessment (EMILIA) 
-# Public Repository
+# Code Public Repository
 
 Home of the EMILIA algorithm, a Time-Dependent Dynamic Identification Algorithm for civil engineering and seismic engineering purposes.
 
