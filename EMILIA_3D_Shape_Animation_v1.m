@@ -20,8 +20,11 @@ function EMILIA_3D_Shape_Animation_v1(Displa_Data_RAW,Bayes_PD_fn,Mode,IniSample
         EndSample = numel(Displa_Data_RAW(1,:,1));
     end
     Norm_Data = Displa_Data_RAW(:,[IniSample:EndSample],Mode)./max(max(abs(Displa_Data_RAW(:,[IniSample:EndSample],Mode))));
-    Phi_X  = x_coord+Norm_Data(x_chann,1);
-    Phi_Y  = y_coord+Norm_Data(y_chann,1);  
+    % ---
+    
+    % ---
+    Phi_X  = x_coord+Norm_Data(1:numel(x_chann),1);
+    Phi_Y  = y_coord+Norm_Data((numel(x_chann)+1):(numel(x_chann)+numel(y_chann)),1);  
     if isnan(z_chann(1))
         Phi_Z  = z_coord+zeros(size(z_chann));
     else
@@ -41,12 +44,12 @@ function EMILIA_3D_Shape_Animation_v1(Displa_Data_RAW,Bayes_PD_fn,Mode,IniSample
         if ~ishghandle(FigPHI)
             break 
         end
-        Phi_X  = x_coord+Norm_Data(x_chann,i);
-        Phi_Y  = y_coord+Norm_Data(y_chann,i);  
+        Phi_X  = x_coord+Norm_Data(1:numel(x_chann),i);
+        Phi_Y  = y_coord+Norm_Data((numel(x_chann)+1):(numel(x_chann)+numel(y_chann)),i);    
         if isnan(z_chann(1))
             Phi_Z  = z_coord+zeros(size(z_chann));
         else
-            Phi_Z  = z_coord+Norm_Data(z_chann,i); 
+            Phi_Z  = z_coord+Norm_Data((numel(x_chann)+2+numel(y_chann)):(numel(x_chann)+2+numel(y_chann))+numel(z_chann),i); 
         end
         set(Plot_1,'xdata',Phi_X);
         set(Plot_1,'ydata',Phi_Y);

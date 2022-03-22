@@ -4,9 +4,11 @@
 % Contact   :  m.hormazabal@gmail.com
 %------------------------------------------------------------------------------------------
 function [Acc_Data,Displa_Data_RAW,iFr,iAm,fs,Level,Channels,Bayes_PD,PDF_Fun,f_vector,...
-          MEV_x,Test_Array] = EMILIA_core_v1(Data_File,Geo_File,fs,Level,Decimate,...
-                                             Factor,TimeAlign,Wavelet,Distri,Dist_Res,...
-                                             Max_Damp,Min_Prob,Include_Z)
+          MEV_x,Test_Array,Output_table] = EMILIA_core_v1(Data_File,Geo_File,fs,Level,...
+                                                          Decimate,Factor,TimeAlign,...
+                                                          Wavelet,Distri,Dist_Res,...
+                                                          Max_Damp,Min_Prob,Include_Z,...
+                                                          FiltHi_Acc,FiltLo_Acc,Correct_Acc)
 %------------------------------------------------------------------------------------------
 %
 %
@@ -36,6 +38,51 @@ function [Acc_Data,Displa_Data_RAW,iFr,iAm,fs,Level,Channels,Bayes_PD,PDF_Fun,f_
     tic; TempT  = fprintf('    STAGE A: Computing data decomposition...');
     Raw_Data    = readmatrix(Data_File); 
     Acc_Data    = Raw_Data(:,Channels); 
+    % --- Low Pass Filter
+    if isequal(FiltHi_Acc,'Yes')
+        fc_Hi            = 0.9*(fs/2);
+        order_Hi         = 6; 
+        [z_Hi,p_Hi,k_Hi] = butter(order_Hi,fc_Hi/(fs/2),'low');
+        [sos_Hi,g_Hi]    = zp2sos(z_Hi,p_Hi,k_Hi); %fvtool(sos_Hi);
+        for k = 1:numel(Channels)
+            Acc_Data_TEMP = filtfilt(sos_Hi,g_Hi,Acc_Data(:,k));
+            Acc_Data(:,k) = Acc_Data_TEMP;
+        end
+        clear fc_Hi order_Hi z_Hi p_Hi k_Hi sos_Hi g_Hi Acc_Data_TEMP
+    end
+    % --- High Pass Filter
+    if isequal(FiltLo_Acc,'Yes')
+        fc_Lo            = 0.1;
+        order_Lo         = 6; 
+        [z_Lo,p_Lo,k_Lo] = butter(order_Lo,fc_Lo/(fs/2),'high');
+        [sos_Lo,g_Lo]    = zp2sos(z_Lo,p_Lo,k_Lo); %fvtool(sos_Lo);
+        for k = 1:numel(Channels)
+            Acc_Data_TEMP = filtfilt(sos_Lo,g_Lo,Acc_Data(:,k));
+            Acc_Data(:,k) = Acc_Data_TEMP;
+        end
+        clear fc_Lo order_Lo z_Lo p_Lo k_Lo sos_Lo g_Lo Acc_Data_TEMP
+    end
+    % --- Base-line correction
+    if isequal(Correct_Acc,'Yes')
+        t = (0:1/fs:(numel(Acc_Data(:,1))/fs)-(1/fs))';
+        fcut = (fs/2)-1;      
+        for k = 1:numel(Channels)
+            Vel_Data      = cumtrapz(Acc_Data(:,k))*t(2);       
+            Vel_Fit       = polyfit(t,Vel_Data,2);     
+            ptd           = Vel_Fit(1)*t+Vel_Fit(2);
+            udd_cor1      = Acc_Data(:,k) - ptd;       
+            udd_cor1_f    = fft(udd_cor1);
+            df            = 1/t(2)/length(t);
+            f             = df:df:df*length(t);
+            [b,a]         = butter(4,fcut/(f(end)/2),'high');
+            udd_cor2_f    = filter(b,a,udd_cor1_f);
+            udd_cor2      = ifft(udd_cor2_f);      
+            Acc_Data_Temp = real(udd_cor2);   
+            Acc_Data(:,k) = Acc_Data_Temp;
+        end
+        clear a b df disp f fcut k ptd t u_cor ud_cor udd_cor1 udd_cor1_f udd_cor2 udd_cor2_f vel vel_Data Vel_Fit Acc_Data_Temp Vel_Data
+    end
+    % ---
     if isequal(Decimate,'Yes')
         Acc_Data_temp = zeros(numel(Acc_Data(:,1))/Factor,numel(Channels));
         for k = 1:numel(Channels)
@@ -169,15 +216,15 @@ function [Acc_Data,Displa_Data_RAW,iFr,iAm,fs,Level,Channels,Bayes_PD,PDF_Fun,f_
 % --- STAGE B: Compute Displacements ------------------------------------------------------
     tic; TempT = fprintf('    STAGE B: Computing displacements...');
     t0              = (0:1/fs:(numel(Acc_Data(:,1))/fs)-(1/fs))';
-    [order,Wc]      = buttord(0.0001,0.9,0.001,60);
-    [b1,a1]         = butter(order,Wc,'high');
+    [order_Hi,Wc_Hi]      = buttord(0.0001,0.9,0.001,60);
+    [bHi,aHi]         = butter(order_Hi,Wc_Hi,'high');
     Displa_Data_RAW = zeros(size(Decomp_Data));
     for k = 1:2^Level
         for j = 1:numel(Channels)
             Mode_Vel               = cumtrapz(t0,Decomp_Data(j,:,k));       
-            Filt_Vel               = filtfilt(b1,a1,Mode_Vel);
+            Filt_Vel               = filtfilt(bHi,aHi,Mode_Vel);
             Non_Filt_Displa        = cumtrapz(t0,Filt_Vel);
-            Displa_Data_RAW(j,:,k) = filtfilt(b1,a1,Non_Filt_Displa); % [OUTPUT] Mode Shapes: Displacement Hi-Pass filtering [Channels,Samples,2^Level]            
+            Displa_Data_RAW(j,:,k) = filtfilt(bHi,aHi,Non_Filt_Displa); % [OUTPUT] Mode Shapes: Displacement Hi-Pass filtering [Channels,Samples,2^Level]            
         end
     end
     Displa_Data_NORM = Displa_Data_RAW/...
